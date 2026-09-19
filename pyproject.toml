@@ -1,0 +1,7 @@
+[project]
+name = "pytorb"
+version = "0.1.0"
+description = "Django implementation of Task Orbit for frontend and backend."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
