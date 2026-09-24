@@ -1,0 +1,104 @@
+<!-- Desktop View -->
+<aside class="d-none d-md-flex flex-column p-3 border-end" style="width: 260px;">
+    <a href="/" class="d-flex align-items-center mb-4 text-decoration-none">
+        <span class="fs-4 fw-bold">TaskOrbit</span>
+    </a>
+    <ul class="nav nav-pills flex-column gap-1">
+        <li class="nav-item">
+            <a href="#" class="nav-link active">
+                <i class="bi bi-house"></i>
+                Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="bi bi-kanban"></i>
+                Projects
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="bi bi-compass"></i>
+                Explore
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="bi bi-bell"></i>
+                Notifications
+            </a>
+        </li>
+    </ul>
+    <div class="mt-auto pt-3 border-top">
+        <div class="d-flex align-items-center mb-3">
+            <img src="{{ profile.avatar_url }}" alt="User avatar" width="40" height="40"
+                class="rounded-circle me-2">
+            <div class="text-truncate">
+                <div class="fw-semibold text-truncate">
+                    {{ profile.display_name }}
+                </div>
+                <small class="text-body-secondary">
+                    @{{ profile.username }}
+                </small>
+            </div>
+        </div>
+        <button class="btn btn-outline-danger w-100">
+            Logout
+        </button>
+    </div>
+</aside>
+
+<!-- Mobile View -->
+<nav class="d-md-none fixed-bottom bg-body border-top">
+    <div class="d-flex justify-content-around align-items-center">
+        <a href="#" class="nav-link text-center py-2 flex-fill active">
+            <div class="fs-5">
+                <i class="bi bi-house"></i>
+            </div>
+            <small>Dashboard</small>
+        </a>
+        <a href="#" class="nav-link text-center py-2 flex-fill text-body">
+            <div class="fs-5">
+                <i class="bi bi-kanban"></i>
+            </div>
+            <small>Projects</small>
+        </a>
+        <a href="#" class="nav-link text-center py-2 flex-fill text-body">
+            <div class="fs-5">
+                <i class="bi bi-compass"></i>
+            </div>
+            <small>Explore</small>
+        </a>
+        <a href="#" class="nav-link text-center py-2 flex-fill text-body position-relative">
+            <div class="fs-5">
+                <i class="bi bi-bell"></i>
+            </div>
+            <small>Notifications</small>
+        </a>
+        <div class="flex-fill text-center py-2">
+            <button class="btn p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="{{ profile.avatar_url }}" alt="Profile" width="32" height="32" class="rounded-circle">
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end mb-2">
+                <li>
+                    <span class="dropdown-item-text fw-semibold">
+                        {{ profile.display_name }}
+                    </span>
+                </li>
+                <li>
+                    <span class="dropdown-item-text text-body-secondary">
+                        @{{ profile.username }}
+                    </span>
+                </li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li>
+                    <button class="dropdown-item text-danger">
+                        Logout
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
