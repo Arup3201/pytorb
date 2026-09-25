@@ -31,8 +31,7 @@
     </ul>
     <div class="mt-auto pt-3 border-top">
         <div class="d-flex align-items-center mb-3">
-            <img src="{{ profile.avatar_url }}" alt="User avatar" width="40" height="40"
-                class="rounded-circle me-2">
+            <img src="{{ profile.avatar_url }}" alt="User avatar" width="40" height="40" class="rounded-circle me-2">
             <div class="text-truncate">
                 <div class="fw-semibold text-truncate">
                     {{ profile.display_name }}
@@ -42,9 +41,9 @@
                 </small>
             </div>
         </div>
-        <button class="btn btn-outline-danger w-100">
+        <a class="btn btn-outline-danger w-100" href="{% url 'accounts:logout' %}">
             Logout
-        </button>
+        </a>
     </div>
 </aside>
 
@@ -94,9 +93,9 @@
                     <hr class="dropdown-divider">
                 </li>
                 <li>
-                    <button class="dropdown-item text-danger">
+                    <a class="dropdown-item text-danger" target="_blank" href="{% url 'accounts:logout' %}">
                         Logout
-                    </button>
+                    </a>
                 </li>
             </ul>
         </div>
