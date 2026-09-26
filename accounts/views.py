@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect
 from django.db import IntegrityError
+from django.core.files.storage import default_storage
 from . import models
 
 def register_account(request):
@@ -52,8 +53,12 @@ def profile(request):
         return HttpResponseRedirect(reverse('accounts:login'))
 
     user = request.user
+    if user.avatar_key:
+        avatar_url = default_storage.url(user.avatar_key)
+    else:
+        avatar_url = None
     profile_info = {
-        'avatar_url': "https://lh3.googleusercontent.com/a/ACg8ocKqUa5riQe85OXVIEQxpHkmLVlWrpSZ4JCK4UxgyOubwuRxeb8t=s288-c-no",
+        'avatar_url': avatar_url,
         'display_name': f"{user.first_name} {user.last_name}", 
         'first_name': user.first_name,
         'last_name': user.last_name,
@@ -93,4 +98,31 @@ def edit_account(request):
         return HttpResponseRedirect(reverse('accounts:profile'))
 
     messages.add_message(request, messages.SUCCESS, "User profile data has been updated!")
+    return HttpResponseRedirect(reverse('accounts:profile'))
+
+def edit_avatar(request):
+    if request.method != "POST":
+        messages.add_message(request, messages.ERROR, "Only POST method not allowed for this URL")
+        return HttpResponseRedirect(reverse('accounts:profile'))
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('accounts:login'))
+
+    file = request.FILES['avatar']
+    file_key = f"users/{request.user.id}/avatars/{file.name}"
+    try:
+        default_storage.save(file_key, file)
+    except Exception as e:
+        traceback.print_exception(e)
+        messages.add_message(request, messages.ERROR, "Failed to edit the image! Please try again.")
+        return HttpResponseRedirect(reverse('accounts:profile'))
+
+    try:
+        user = models.User.objects.get(id=request.user.id)
+        user.avatar_key = file_key
+        user.save()
+        messages.add_message(request, messages.SUCCESS, "User avatar updated successfully.")
+    except Exception as e:
+        traceback.print_exception(e)
+        messages.add_message(request, messages.ERROR, "Failed to save the new image location in database! Please try again.")
+
     return HttpResponseRedirect(reverse('accounts:profile'))

@@ -31,7 +31,16 @@
     </ul>
     <div class="mt-auto pt-3 border-top">
         <div class="d-flex align-items-center mb-3">
+            {% if profile.avatar_url %}
             <img src="{{ profile.avatar_url }}" alt="User avatar" width="40" height="40" class="rounded-circle me-2">
+            {% else %}
+            <div
+                class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center"
+                style="width: 40px; height: 40px;"
+            >
+                <i class="bi bi-person-fill fs-1"></i>
+            </div>
+            {% endif %}
             <div class="text-truncate">
                 <div class="fw-semibold text-truncate">
                     {{ profile.display_name }}
@@ -76,7 +85,16 @@
         </a>
         <div class="flex-fill text-center py-2">
             <button class="btn p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="{{ profile.avatar_url }}" alt="Profile" width="32" height="32" class="rounded-circle">
+                {% if profile.avatar_url %}
+                <img src="{{ profile.avatar_url }}" alt="User avatar" width="32" height="32" class="rounded-circle me-2">
+                {% else %}
+                <div
+                    class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center"
+                    style="width: 32px; height: 32px;"
+                >
+                    <i class="bi bi-person-fill fs-1"></i>
+                </div>
+                {% endif %}
             </button>
             <ul class="dropdown-menu dropdown-menu-end mb-2">
                 <li>
