@@ -1,0 +1,169 @@
+{% extends 'auth_base.html' %}
+
+{% block title %}Projects - Task Orbit{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Top Bar -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item active" aria-current="page">
+                    Projects
+                </li>
+            </ol>
+        </nav>
+        <div class="d-flex gap-2">
+            <a href="#" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>
+                Add Project
+            </a>
+        </div>
+    </div>
+
+    <!-- Search / Sort -->
+    <div class="d-flex flex-column flex-sm-row gap-2 mb-3">
+        <div class="input-group flex-grow-1">
+            <span class="input-group-text">
+                <i class="bi bi-search"></i>
+            </span>
+            <input
+                type="search"
+                class="form-control"
+                placeholder="Search projects..."
+                aria-label="Search projects"
+            >
+        </div>
+        <!-- Sort -->
+        <div class="dropdown">
+            <button
+                class="btn btn-outline-secondary dropdown-toggle w-100"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+            >
+                <i class="bi bi-sort-down me-1"></i>
+                Sort
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <button class="dropdown-item">
+                        Title
+                    </button>
+                </li>
+                <li>
+                    <button class="dropdown-item">
+                        Recently Updated
+                    </button>
+                </li>
+                <li>
+                    <button class="dropdown-item">
+                        Recently Created
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Projects Table -->
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            Title
+                        </th>
+                        <th scope="col">
+                            Owner
+                        </th>
+                        <th scope="col">
+                            Updated
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if page_obj %}
+                    {% for project in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="#" class="text-decoration-none fw-semibold">
+                                {{ project.title }}
+                            </a>
+                        </td>
+                        <td>
+                        </td>
+
+                        <td class="text-body-secondary">
+                            {{ project.updated_at }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center py-5 text-body-secondary">
+                            No projects found.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav
+        class="mt-4"
+        aria-label="Projects pagination"
+    >
+        <ul class="pagination justify-content-center mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" aria-label="Previous" href="?page=1">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% if page_obj.has_previous %}
+            <li class="page-item" aria-current="page">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                    {{ page_obj.number }}
+                </a>
+            </li>
+            {% endif %}
+            <li class="page-item active" aria-current="page">
+                <a class="page-link">
+                    {{ page_obj.number }}
+                </a>
+            </li>
+            {% if page_obj.has_next %}
+            <li class="page-item" aria-current="page">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                    {{ page_obj.next_page_number }}
+                </a>
+            </li>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}
