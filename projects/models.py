@@ -8,3 +8,7 @@ class Project(models.Model):
     topics = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def owner_name(self):
+        return self.owner.username

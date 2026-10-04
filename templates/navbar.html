@@ -1,3 +1,5 @@
+{% load ui_tags %}
+
 <!-- Desktop View -->
 <aside class="d-none d-md-flex flex-column p-3 border-end" style="width: 260px;">
     <a href="/" class="d-flex align-items-center mb-4 text-decoration-none">
@@ -5,34 +7,34 @@
     </a>
     <ul class="nav nav-pills flex-column gap-1">
         <li class="nav-item">
-            <a href="#" class="nav-link active">
-                <i class="bi bi-house"></i>
+            <a href="/" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-house{% if active_page == 'dashboard' %}-fill{% endif %}"></i>
                 Dashboard
             </a>
         </li>
         <li class="nav-item">
-            <a href="#" class="nav-link">
-                <i class="bi bi-kanban"></i>
+            <a href="/projects/" class="nav-link {% if active_page == 'projects' %}active{% endif %}">
+                <i class="bi bi-kanban{% if active_page == 'projects' %}-fill{% endif %}"></i>
                 Projects
             </a>
         </li>
         <li class="nav-item">
-            <a href="#" class="nav-link">
-                <i class="bi bi-compass"></i>
+            <a href="/explore/" class="nav-link {% if active_page == 'explore' %}active{% endif %}">
+                <i class="bi bi-compass{% if active_page == 'explore' %}-fill{% endif %}"></i>
                 Explore
             </a>
         </li>
         <li class="nav-item">
-            <a href="#" class="nav-link">
-                <i class="bi bi-bell"></i>
+            <a href="/notifications/" class="nav-link {% if active_page == 'notifications' %}active{% endif %}">
+                <i class="bi bi-bell{% if active_page == 'notifications' %}-fill{% endif %}"></i>
                 Notifications
             </a>
         </li>
     </ul>
     <div class="mt-auto pt-3 border-top">
-        <div class="d-flex align-items-center mb-3">
-            {% if profile.avatar_url %}
-            <img src="{{ profile.avatar_url }}" alt="User avatar" width="40" height="40" class="rounded-circle me-2">
+        <a class="d-flex align-items-center mb-3" href="{% url 'accounts:profile' %}">
+            {% if request.user.avatar_key %}
+            <img src="{% fetch_file request.user.avatar_key %}" alt="User avatar" width="40" height="40" class="rounded-circle me-2">
             {% else %}
             <div
                 class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center"
@@ -43,13 +45,13 @@
             {% endif %}
             <div class="text-truncate">
                 <div class="fw-semibold text-truncate">
-                    {{ profile.display_name }}
+                    {% merge_strings request.user.first_name request.user.last_name %}
                 </div>
                 <small class="text-body-secondary">
-                    @{{ profile.username }}
+                    @{{ request.user.username }}
                 </small>
             </div>
-        </div>
+        </a>
         <a class="btn btn-outline-danger w-100" href="{% url 'accounts:logout' %}">
             Logout
         </a>
@@ -59,34 +61,54 @@
 <!-- Mobile View -->
 <nav class="d-md-none fixed-bottom bg-body border-top">
     <div class="d-flex justify-content-around align-items-center">
-        <a href="#" class="nav-link text-center py-2 flex-fill active">
+        <a href="/" class="nav-link text-center py-2 flex-fill 
+        {% if active_page == 'dashboard' %}
+            active text-primary fw-semibold
+        {% else %}
+            text-body
+        {% endif %}">
             <div class="fs-5">
-                <i class="bi bi-house"></i>
+                <i class="bi bi-house{% if active_page == 'dashboard' %}-fill{% endif %}"></i>
             </div>
             <small>Dashboard</small>
         </a>
-        <a href="#" class="nav-link text-center py-2 flex-fill text-body">
+        <a href="/projects/" class="nav-link text-center py-2 flex-fill text-body 
+        {% if active_page == 'projects' %}
+            active text-primary fw-semibold
+        {% else %}
+            text-body
+        {% endif %}">
             <div class="fs-5">
-                <i class="bi bi-kanban"></i>
+                <i class="bi bi-kanban{% if active_page == 'projects' %}-fill{% endif %}"></i>
             </div>
             <small>Projects</small>
         </a>
-        <a href="#" class="nav-link text-center py-2 flex-fill text-body">
+        <a href="/explore/" class="nav-link text-center py-2 flex-fill text-body 
+        {% if active_page == 'explore' %}
+            active text-primary fw-semibold
+        {% else %}
+            text-body
+        {% endif %}">
             <div class="fs-5">
-                <i class="bi bi-compass"></i>
+                <i class="bi bi-compass{% if active_page == 'explore' %}-fill{% endif %}"></i>
             </div>
             <small>Explore</small>
         </a>
-        <a href="#" class="nav-link text-center py-2 flex-fill text-body position-relative">
+        <a href="/notifications/" class="nav-link text-center py-2 flex-fill text-body position-relative  
+        {% if active_page == 'notifications' %}
+            active text-primary fw-semibold
+        {% else %}
+            text-body
+        {% endif %}">
             <div class="fs-5">
-                <i class="bi bi-bell"></i>
+                <i class="bi bi-bell{% if active_page == 'notifications' %}-fill{% endif %}"></i>
             </div>
             <small>Notifications</small>
         </a>
         <div class="flex-fill text-center py-2">
             <button class="btn p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                {% if profile.avatar_url %}
-                <img src="{{ profile.avatar_url }}" alt="User avatar" width="32" height="32" class="rounded-circle me-2">
+                {% if request.user.avatar_key %}
+                <img src="{% fetch_file request.user.avatar_key %}" alt="User avatar" width="32" height="32" class="rounded-circle me-2">
                 {% else %}
                 <div
                     class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center"
@@ -98,14 +120,13 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end mb-2">
                 <li>
-                    <span class="dropdown-item-text fw-semibold">
-                        {{ profile.display_name }}
-                    </span>
-                </li>
-                <li>
-                    <span class="dropdown-item-text text-body-secondary">
-                        @{{ profile.username }}
-                    </span>
+                    <a class="dropdown-item-text fw-semibold" href="{% url 'accounts:profile' %}">
+                        {% if request.user.first_name and request.user.last_name %}
+                        {% merge_strings request.user.first_name request.user.last_name %}
+                        {% else %}
+                        @{{ request.user.username }}
+                        {% endif %}
+                    </a>
                 </li>
                 <li>
                     <hr class="dropdown-divider">

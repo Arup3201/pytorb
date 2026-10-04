@@ -12,39 +12,12 @@
 
                     <form method="post" action="{% url 'accounts:register' %}">
                         {% csrf_token %}
+                        {% for field in form %}
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email*</label>
-                            <input type="email" class="form-control" id="email" name="email"
-                                placeholder="john@example.com" required>
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
                         </div>
-
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username*</label>
-                            <input type="text" class="form-control" id="username" name="username" placeholder="john"
-                                required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="fname" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="fname" name="fname" placeholder="john">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="lname" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="lname" name="lname" placeholder="john">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="****"
-                                required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="confirm-password" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirm-password" name="confirm-password"
-                                placeholder="****" required>
-                        </div>
+                        {% endfor %}
 
                         <button type="submit" class="btn btn-primary w-100">
                             Register

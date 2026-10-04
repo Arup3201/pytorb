@@ -2,127 +2,93 @@ import traceback
 from django.contrib import messages
 from django.shortcuts import render
 from django.urls import reverse
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-from django.db import IntegrityError
-from django.core.files.storage import default_storage
-from . import models
+from . import forms, services, selectors
 
-def register_account(request):
+def register(request):
     if request.method == "POST":
-        email = request.POST.get("email")
-        username = request.POST.get("username")
-        first_name = request.POST.get("fname")
-        last_name = request.POST.get("lname")
-        password = request.POST.get("password")
-        confirm_password = request.POST.get("confirm-password")
-        if password != confirm_password:
-            messages.add_message(request, messages.ERROR, "Confirm Password does not match the Password!")
+        form = forms.RegisterForm(request.POST)
+        if not form.is_valid() and form.errors.get("password2"):
+            messages.add_message(request, messages.ERROR, "Passwords do not match.")
         else:
             try:
-                user = models.User.objects.create_user(username=username, email=email, password=password)
-                user.first_name = first_name
-                user.last_name = last_name
-                user.save()
+                services.create_user(email=form.data["email"], 
+                                     username=form.data["username"], 
+                                     first_name=form.data.get("first_name"), 
+                                     last_name = form.data.get("last_name"), 
+                                     password = form.data["password1"])
                 messages.add_message(request, messages.SUCCESS, "You have been successfully registerd to Task Orbit!")
-            except IntegrityError:
-                messages.add_message(request, messages.ERROR, "Email/Username already exist. Please try to login instead...")
+            except ValueError as ve:
+                messages.add_message(request, messages.ERROR, str(ve))
             except Exception as e:
                 traceback.print_exception(e)
-                messages.add_message(request, messages.ERROR, "Something went wrong. Please try again.")
-    return render(request, "register.html")
-
-def login_account(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return HttpResponseRedirect(reverse("accounts:profile"))
-        else:
-            messages.add_message(request, messages.ERROR, "Username/Password is not correct!")
-    elif request.method == "GET":
-        if request.user.is_authenticated:
-            return HttpResponseRedirect(reverse("accounts:profile"))
-
-    return render(request, "login.html")
-
-def profile(request):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('accounts:login'))
-
-    user = request.user
-    if user.avatar_key:
-        avatar_url = default_storage.url(user.avatar_key)
+                messages.add_message(request, messages.ERROR, "Something went wrong during registration. Please try again later.")
     else:
-        avatar_url = None
-    profile_info = {
-        'avatar_url': avatar_url,
-        'display_name': f"{user.first_name} {user.last_name}", 
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'email': user.email, 
-        'username': user.username, 
-        'skills': user.skills, 
-        'total_projects': 12,
-        'total_tasks_completed': 87,
-        'task_completion_rate': f"{87/100:.2f}"
-    }
-    return render(request, 'profile.html', {'profile': profile_info})
+        form = forms.RegisterForm()
+    
+    return render(request, "register.html", context={'form': form})
 
+def login(request):
+    if request.method == "GET" and request.user.is_authenticated:
+        next = request.GET["next"]
+        return HttpResponseRedirect(next)
+
+    if request.method == "POST":
+        form = forms.LoginForm(request.POST)
+        if not form.is_valid():
+            error_messages = "\n".join([str(error) for error in form.non_field_errors()])
+            messages.add_message(request, messages.ERROR, error_messages)
+        else:
+            try:
+                services.login_user(request=request, 
+                                    username=form.data["username"], 
+                                    password=form.data["password"])
+                return HttpResponseRedirect(reverse("accounts:profile"))
+            except ValueError as v:
+                messages.add_message(request, messages.ERROR, str(v))
+    else:
+        form = forms.LoginForm()
+
+    return render(request, "login.html", {"form": form})
+
+@login_required
+def profile(request):
+    profile = selectors.get_user_profile_data(user=request.user)
+    edit_form = forms.AccountEditForm(instance=request.user)
+    return render(request, 'profile.html', {'profile': profile, 'form': edit_form})
+
+@login_required
 def account_logout(request):
-    logout(request)
+    services.logout_user(request=request)
     return HttpResponseRedirect(reverse('accounts:login'))
 
+@login_required
 def edit_account(request):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('accounts:login'))
-
     if request.method != "POST":
         messages.add_message(request, messages.ERROR, "Request method POST is not allowed!")
         return HttpResponseRedirect(reverse('accounts:profile'))
 
-    first_name = request.POST.get("first_name")
-    last_name = request.POST.get("last_name")
-    skills = request.POST.get("skills")
-
-    user = models.User.objects.get(id=request.user.id)
-    user.first_name = first_name
-    user.last_name = last_name
-    user.skills = skills
-    try:
-        user.save()
-    except:
-        messages.add_message(request, messages.ERROR, "Something went wrong. Please try again...")
-        return HttpResponseRedirect(reverse('accounts:profile'))
-
+    form = forms.AccountEditForm(request.POST)
+    services.edit_account(user=request.user, 
+                          first_name=form.data["first_name"], 
+                          last_name=form.data["last_name"], 
+                          skills=form.data["skills"])
     messages.add_message(request, messages.SUCCESS, "User profile data has been updated!")
     return HttpResponseRedirect(reverse('accounts:profile'))
 
-def edit_avatar(request):
+@login_required
+def upload_avatar(request):
     if request.method != "POST":
         messages.add_message(request, messages.ERROR, "Only POST method not allowed for this URL")
         return HttpResponseRedirect(reverse('accounts:profile'))
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('accounts:login'))
 
     file = request.FILES['avatar']
-    file_key = f"users/{request.user.id}/avatars/{file.name}"
     try:
-        default_storage.save(file_key, file)
+        services.save_user_avatar(user=request.user, file=file)
     except Exception as e:
         traceback.print_exception(e)
         messages.add_message(request, messages.ERROR, "Failed to edit the image! Please try again.")
         return HttpResponseRedirect(reverse('accounts:profile'))
-
-    try:
-        user = models.User.objects.get(id=request.user.id)
-        user.avatar_key = file_key
-        user.save()
-        messages.add_message(request, messages.SUCCESS, "User avatar updated successfully.")
-    except Exception as e:
-        traceback.print_exception(e)
-        messages.add_message(request, messages.ERROR, "Failed to save the new image location in database! Please try again.")
 
     return HttpResponseRedirect(reverse('accounts:profile'))
