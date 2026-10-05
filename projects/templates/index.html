@@ -1,8 +1,10 @@
 {% extends 'auth_base.html' %}
+{% load ui_tags %}
 
-{% block title %}Projects - Task Orbit{% endblock %}
+{% block title %} Project {{ project.id }} - Task Orbit {% endblock %}
 
 {% block content %}
+
 <div class="container-fluid py-4">
     <!-- Top Bar -->
     <div class="d-flex align-items-center justify-content-between mb-4">
@@ -11,198 +13,157 @@
                 <li class="breadcrumb-item active" aria-current="page">
                     Projects
                 </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ project.title|truncatechars:50 }}
+                </li>
             </ol>
         </nav>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProjectModal"> <i
-                class="bi bi-plus-lg me-1"></i>
-            Add Project
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProjectModal"> <i
+                class="bi bi-pencil-square me-1"></i>
+            Edit Project
         </button>
     </div>
 
-    <!-- Search / Sort -->
-    <div class="d-flex flex-column flex-sm-row gap-2 mb-3">
-        <form method="GET" class="input-group flex-grow-1">
-            <span class="input-group-text">
-                <i class="bi bi-search"></i>
-            </span>
-            <input type="search" value="{{ search }}" class="form-control" placeholder="Search projects..." aria-label="Search projects"
-                name="search">
-            <input type="hidden" value="{{ sort }}" name="sort">
-        </form>
-
-        <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown"
-                aria-expanded="false">
-                <i class="bi bi-sort-down me-1"></i>
-                Sort
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a href="?search={{ search|urlencode }}&sort=title" class="dropdown-item {% if sort == 'title'%}active{% endif %}">
-                        Title
-                    </a>
-                </li>
-                <li>
-                    <a href="?search={{ search|urlencode }}&sort=updated" class="dropdown-item {% if sort == 'updated'%}active{% endif %}">
-                        Recently Updated
-                    </a>
-                </li>
-                <li>
-                    <a href="?search={{ search|urlencode }}&sort=created" class="dropdown-item {% if sort == 'created'%}active{% endif %}">
-                        Recently Created
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Projects Table -->
-    <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th scope="col">
-                            Title
-                        </th>
-                        <th scope="col">
-                            Owner
-                        </th>
-                        <th scope="col">
-                            Created
-                        </th>
-                        <th scope="col">
-                            Updated
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if page_obj %}
-                    {% for project in page_obj %}
-                    <tr>
-                        <td>
-                            <a href="#" class="text-decoration-none fw-semibold">
-                                {{ project.title }}
-                            </a>
-                        </td>
-                        <td>
-                            {{ project.owner_name }}
-                        </td>
-                        <td class="text-body-secondary">
-                            {{ project.created_at }}
-                        </td>
-                        <td class="text-body-secondary">
-                            {{ project.updated_at }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% else %}
-                    <tr>
-                        <td colspan="3" class="text-center py-5 text-body-secondary">
-                            No projects found.
-                        </td>
-                    </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Pagination -->
-    <nav class="mt-4" aria-label="Projects pagination">
-        <ul class="pagination justify-content-center mb-0">
-            {% if page_obj.has_previous %}
-            <li class="page-item">
-                <a class="page-link" aria-label="Previous" href="?page=1&search={{ search|urlencode }}&sort={{ sort }}">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-                <a class="page-link" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-            {% endif %}
-
-            {% if page_obj.has_previous %}
-            <li class="page-item" aria-current="page">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search|urlencode }}&sort={{ sort }}">
-                    {{ page_obj.previous_page_number }}
-                </a>
-            </li>
-            {% endif %}
-            <li class="page-item active" aria-current="page">
-                <a class="page-link">
-                    {{ page_obj.number }}
-                </a>
-            </li>
-            {% if page_obj.has_next %}
-            <li class="page-item" aria-current="page">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search|urlencode }}&sort={{ sort }}">
-                    {{ page_obj.next_page_number }}
-                </a>
-            </li>
-            {% endif %}
-            {% if page_obj.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search|urlencode }}&sort={{ sort }}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-            {% else %}
-            <li class="page-item disabled">
-                <a class="page-link" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
-</div>
-
-<div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title" id="addProjectLabel">
-                    Add Project
-                </h5>
-
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="mb-3">
+                <h2 class="fw-bold mb-1">
+                    {{ project.title }}
+                </h2>
+                <p class="text-body-secondary mb-0">
+                    Project details
+                </p>
             </div>
 
-            <form method="post" action="{% url 'projects:index' %}">
-                {% csrf_token %}
+            <hr class="my-4">
 
-                <div class="modal-body">
-                    {% for field in form %}
-                    <div class="mb-3">
-                        <label for="{{ field.id_for_label }}" class="form-label">
-                            {{ field.label }}
-                        </label>
-                        {{ field }}
-                        {% if field.help_text %}
-                        <div class="form-text">
-                            {{ field.help_text }}
-                        </div>
-                        {% endif %}
+            <div class="mb-4">
+                <h6 class="fw-semibold mb-2">
+                    Description
+                </h6>
+
+                {% if project.description %}
+                    <p class="text-body-secondary mb-0">
+                        {{ project.description }}
+                    </p>
+                {% else %}
+                    <p class="text-body-secondary fst-italic mb-0">
+                        No description provided.
+                    </p>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <h6 class="fw-semibold mb-2">
+                    Topics
+                </h6>
+
+                {% if project.topics %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% with project.topics|split:"," as items %}
+                            {% for topic in items %}
+                                <span class="badge text-bg-primary rounded-pill px-3 py-2">
+                                    {{ topic }}
+                                </span>
+                            {% endfor %}
+                        {% endwith %}
                     </div>
-                    {% endfor %}
+                {% else %}
+                    <p class="text-body-secondary fst-italic mb-0">
+                        No topics added.
+                    </p>
+                {% endif %}
+            </div>
+
+            <div>
+                <h6 class="fw-semibold mb-2">
+                    Owner
+                </h6>
+
+                <div class="d-flex align-items-center">
+
+                    {% if project.owner.avatar_key %}
+                        <img
+                            src="{% fetch_file project.owner.avatar_key %}"
+                            alt="{{ project.owner.username }}"
+                            width="40"
+                            height="40"
+                            class="rounded-circle me-3"
+                        >
+                    {% else %}
+                        <div
+                            class="rounded-circle bg-secondary-subtle text-secondary
+                                d-flex align-items-center justify-content-center me-3"
+                            style="width: 40px; height: 40px;"
+                        >
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                    {% endif %}
+
+                    <div>
+                        {% if project.owner.first_name and project.owner.last_name %}
+                            <div class="fw-semibold">
+                                {{ project.owner.first_name }} {{ project.owner.last_name }}
+                            </div>
+                        {% else %}
+                            <div class="fw-semibold">
+                                @{{ project.owner.username }}
+                            </div>
+                        {% endif %}
+
+                        <div class="small text-body-secondary">
+                            @{{ project.owner.username }}
+                        </div>
+                    </div>
+
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn btn-primary" id="addProjectButton">
-                        Add Project
-                    </button>
-            </form>
+            </div>
 
         </div>
     </div>
-</div>
+
+    <div class="modal fade" id="editProjectModal" tabindex="-1" aria-labelledby="editProjectLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProjectLabel">
+                        Edit Project
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form method="post" action="{% url 'projects:index' project.id %}">
+                    {% csrf_token %}
+
+                    <div class="modal-body">
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">
+                                {{ field.label }}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <div class="form-text">
+                                {{ field.help_text }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="editProjectButton">
+                            Edit
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 {% endblock %}

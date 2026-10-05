@@ -3,5 +3,6 @@ from . import views
 
 app_name = "projects"
 urlpatterns = [
-    path("", view=views.index, name='index'),
+    path("", view=views.list, name='list'),
+    path("<int:pk>/", view=views.index, name='index')
 ]

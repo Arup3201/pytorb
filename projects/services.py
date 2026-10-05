@@ -23,3 +23,10 @@ def get_projects_list(*, search: str = "", sort: str = "updated", page_number: i
 
 def create_project(*, title: str, description: str, topics: str, user: User):
     models.Project.objects.create(title=title, description=description, topics=topics, owner=user)
+
+def edit_project(*, pk: str, title: str, description: str, topics: str):
+    project = models.Project.objects.get(pk=pk)
+    project.title = title
+    project.description = description
+    project.topics = topics
+    project.save()

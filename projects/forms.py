@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 from . import models
 
-class CreateProjectForm(forms.ModelForm):
+class ProjectForm(forms.ModelForm):
 
     class Meta:
         model = models.Project
@@ -11,7 +11,8 @@ class CreateProjectForm(forms.ModelForm):
             "title": forms.TextInput(attrs={
                 "class": "form-control"
             }),
-            "description": forms.TextInput(attrs={
+            "description": forms.Textarea(attrs={
+                "rows": 4,
                 "class": "form-control"
             }),
             "topics": forms.TextInput(attrs={

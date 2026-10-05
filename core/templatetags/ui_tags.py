@@ -3,6 +3,13 @@ from django.core.files.storage import default_storage
 
 register = template.Library()
 
+@register.filter(name='split')
+def split(value, key):
+    """
+    Splits a string by the given key/delimiter
+    """
+    return value.split(key)
+
 @register.simple_tag
 def fetch_file(key):
     if key:
