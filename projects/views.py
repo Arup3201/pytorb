@@ -4,6 +4,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from . import services, forms, models
+from tasks.forms import TaskForm
+from tasks import services as task_services
 
 @login_required
 def list(request):
@@ -37,20 +39,47 @@ def index(request, pk):
     if request.method == 'GET':
         project = get_object_or_404(models.Project, pk=pk)
         form = forms.ProjectForm(instance=project)
-        return render(request, 'index.html', {'active_page': 'projects', 'project': project, 'form': form})
-    
-    elif request.method == 'POST':
-        form = forms.ProjectForm(request.POST)
-        if not form.is_valid():
-            messages.add_message(request, messages.ERROR, "\n".join([str(error) for error in form.non_field_errors()]))
+        task_form = TaskForm()
+
+        section = request.GET.get('section', 'tasks')
+        search = request.GET.get('search', '')
+        sort = request.GET.get('sort', 'updated')
+        page_number = request.GET.get('page', 1)
+        if section == 'tasks':
+            page_obj = task_services.list_tasks(project_id=pk, search=search, sort=sort)
         else:
-            title = form.data['title']
-            description = form.data['description']
-            topics = form.data['topics']
-            services.edit_project(pk=pk, title=title, description=description, topics=topics)
-            messages.add_message(request, messages.SUCCESS, "Project has been updated successfully.")
-    
+            page_obj = []
+
+        return render(request, 'index.html', {'active_page': 'projects', 'project_section': section, 'project': project, 'form': form, 'task_form': task_form, 'page_obj': page_obj, 'search': search, 'sort': sort, 'page': page_number})
     else:
         messages.add_message(request, messages.SUCCESS, "URL method is not allowed!")
     
     return redirect('projects:index', pk=pk)
+
+@login_required
+def edit(request, pk):
+    form = forms.ProjectForm(request.POST)
+    if not form.is_valid():
+        messages.add_message(request, messages.ERROR, "\n".join([str(error) for error in form.non_field_errors()]))
+    else:
+        title = form.data['title']
+        description = form.data['description']
+        topics = form.data['topics']
+        services.edit_project(pk=pk, title=title, description=description, topics=topics)
+        messages.add_message(request, messages.SUCCESS, "Project has been updated successfully.")
+
+    return redirect('projects:index', pk=pk)
+
+@login_required
+def create_task(request, project_id):
+    form = TaskForm(request.POST)
+    if not form.is_valid():
+        messages.add_message(request, messages.ERROR, "\n".join([str(error) for error in form.non_field_errors()]))
+    else:
+        title = form.data.get('title', '')
+        description = form.data.get('description', '')
+        status = form.data.get('status', '')
+        task_services.create_task(project_id=project_id, title=title, description=description, status=status)
+        messages.add_message(request, messages.SUCCESS, "A new task has been added successfully.")
+
+    return redirect('projects:index', pk=project_id)
