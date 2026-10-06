@@ -69,17 +69,3 @@ def edit(request, pk):
         messages.add_message(request, messages.SUCCESS, "Project has been updated successfully.")
 
     return redirect('projects:index', pk=pk)
-
-@login_required
-def create_task(request, project_id):
-    form = TaskForm(request.POST)
-    if not form.is_valid():
-        messages.add_message(request, messages.ERROR, "\n".join([str(error) for error in form.non_field_errors()]))
-    else:
-        title = form.data.get('title', '')
-        description = form.data.get('description', '')
-        status = form.data.get('status', '')
-        task_services.create_task(project_id=project_id, title=title, description=description, status=status)
-        messages.add_message(request, messages.SUCCESS, "A new task has been added successfully.")
-
-    return redirect('projects:index', pk=project_id)
