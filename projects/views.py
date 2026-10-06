@@ -46,7 +46,7 @@ def index(request, pk):
         sort = request.GET.get('sort', 'updated')
         page_number = request.GET.get('page', 1)
         if section == 'tasks':
-            page_obj = task_services.list_tasks(project_id=pk, search=search, sort=sort)
+            page_obj = task_services.list_tasks(project_id=pk, search=search, sort=sort, page_number=page_number)
         else:
             page_obj = []
 
