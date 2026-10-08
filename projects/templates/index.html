@@ -180,17 +180,17 @@
                     {% if project_section == 'tasks' %}
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a href="?search={{ search|urlencode }}&sort=title" class="dropdown-item {% if sort == 'title'%}active{% endif %}">
+                            <a href="?section=tasks&search={{ search|urlencode }}&sort=title" class="dropdown-item {% if sort == 'title'%}active{% endif %}">
                                 Title
                             </a>
                         </li>
                         <li>
-                            <a href="?search={{ search|urlencode }}&sort=updated" class="dropdown-item {% if sort == 'updated'%}active{% endif %}">
+                            <a href="?section=tasks&search={{ search|urlencode }}&sort=updated" class="dropdown-item {% if sort == 'updated'%}active{% endif %}">
                                 Recently Updated
                             </a>
                         </li>
                         <li>
-                            <a href="?search={{ search|urlencode }}&sort=created" class="dropdown-item {% if sort == 'created'%}active{% endif %}">
+                            <a href="?section=tasks&sort=created" class="dropdown-item {% if sort == 'created'%}active{% endif %}">
                                 Recently Created
                             </a>
                         </li>
@@ -198,17 +198,17 @@
                     {% elif project_section == 'members' %}
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a href="?search={{ search|urlencode }}&sort=name" class="dropdown-item {% if sort == 'title'%}active{% endif %}">
+                            <a href="?section=members&search={{ search|urlencode }}&sort=name" class="dropdown-item {% if sort == 'title'%}active{% endif %}">
                                 Name
                             </a>
                         </li>
                         <li>
-                            <a href="?search={{ search|urlencode }}&sort=username" class="dropdown-item {% if sort == 'updated'%}active{% endif %}">
+                            <a href="?section=members&search={{ search|urlencode }}&sort=username" class="dropdown-item {% if sort == 'updated'%}active{% endif %}">
                                 Username
                             </a>
                         </li>
                         <li>
-                            <a href="?search={{ search|urlencode }}&sort=joined" class="dropdown-item {% if sort == 'created'%}active{% endif %}">
+                            <a href="?section=members&search={{ search|urlencode }}&sort=joined" class="dropdown-item {% if sort == 'created'%}active{% endif %}">
                                 Recently Joined
                             </a>
                         </li>
@@ -216,17 +216,17 @@
                     {% elif project_section == 'join-requests' %}
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a href="?search={{ search|urlencode }}&sort=name" class="dropdown-item {% if sort == 'title'%}active{% endif %}">
+                            <a href="?section=join-requests&search={{ search|urlencode }}&sort=name" class="dropdown-item {% if sort == 'title'%}active{% endif %}">
                                 Name
                             </a>
                         </li>
                         <li>
-                            <a href="?search={{ search|urlencode }}&sort=username" class="dropdown-item {% if sort == 'updated'%}active{% endif %}">
+                            <a href="?section=join-requests&search={{ search|urlencode }}&sort=username" class="dropdown-item {% if sort == 'updated'%}active{% endif %}">
                                 Username
                             </a>
                         </li>
                         <li>
-                            <a href="?search={{ search|urlencode }}&sort=requested" class="dropdown-item {% if sort == 'created'%}active{% endif %}">
+                            <a href="?section=join-requests&search={{ search|urlencode }}&sort=requested" class="dropdown-item {% if sort == 'created'%}active{% endif %}">
                                 Recently Requested
                             </a>
                         </li>

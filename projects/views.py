@@ -43,11 +43,15 @@ def index(request, pk):
 
         section = request.GET.get('section', 'tasks')
         search = request.GET.get('search', '')
-        sort = request.GET.get('sort', 'updated')
         page_number = request.GET.get('page', 1)
         if section == 'tasks':
+            sort = request.GET.get('sort', 'updated')
             page_obj = task_services.list_tasks(project_id=pk, search=search, sort=sort, page_number=page_number)
+        elif section == 'members':
+            sort = request.GET.get('sort', 'joined')
+            page_obj = services.list_members(project_id=pk, search=search, sort=sort, page_number=page_number)
         else:
+            sort = ''
             page_obj = []
 
         return render(request, 'index.html', {'active_page': 'projects', 'project_section': section, 'project': project, 'form': form, 'task_form': task_form, 'page_obj': page_obj, 'search': search, 'sort': sort, 'page': page_number})

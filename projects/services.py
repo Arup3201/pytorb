@@ -1,4 +1,7 @@
 from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Value, CharField
+from django.db.models.functions import Concat
 from accounts.models import User
 from . import models
 
@@ -22,7 +25,9 @@ def get_projects_list(*, search: str = "", sort: str = "updated", page_number: i
     return page_obj
 
 def create_project(*, title: str, description: str, topics: str, user: User):
-    models.Project.objects.create(title=title, description=description, topics=topics, owner=user)
+    with transaction.atomic():
+        project = models.Project.objects.create(title=title, description=description, topics=topics, owner=user)
+        models.Member.objects.create(user=user, project=project, member_type=models.MemberType.OWNER)
 
 def edit_project(*, pk: str, title: str, description: str, topics: str):
     project = models.Project.objects.get(pk=pk)
@@ -30,3 +35,34 @@ def edit_project(*, pk: str, title: str, description: str, topics: str):
     project.description = description
     project.topics = topics
     project.save()
+
+def list_members(*, project_id: str, search: str = "", sort: str = "joined", page_number: int = 1):
+    members = models.Member.objects.filter(project_id=project_id)
+    
+    full_name = Concat(
+        "user__first_name", 
+        Value(" "),
+        "user__last_name", 
+        output_field=CharField(),
+    )
+    
+    if search:
+        members = members.annotate(
+            full_name=full_name
+        ).filter(full_name__icontains = search)
+
+    if not sort:
+        sort = "joined"
+    if sort == 'joined':
+        members = members.order_by('-created_at')
+    elif sort == 'name':
+        members = members.annotate(
+            full_name=full_name
+        ).order_by('full_name')
+    elif sort == 'username':
+        members = members.order_by('user__username')
+
+    paginator = Paginator(members, 5)
+    page_obj = paginator.get_page(page_number)
+    
+    return page_obj
