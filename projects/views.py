@@ -73,3 +73,12 @@ def edit(request, pk):
         messages.add_message(request, messages.SUCCESS, "Project has been updated successfully.")
 
     return redirect('projects:index', pk=pk)
+
+@login_required
+def get_projects_for_user(request):
+    search = request.GET.get('search', '')
+    sort = request.GET.get('sort', 'created')
+    page_number = request.GET.get('page', 1)
+    page_obj = services.get_projects_for_user(user=request.user, search=search, sort=sort, page_number=page_number)
+
+    return render(request, 'explore.html', {'active_page': 'explore', 'page_obj': page_obj, 'search': search, 'sort': sort, 'page': page_number})

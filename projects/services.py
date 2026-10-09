@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Value, CharField
+from django.db.models import Value, CharField, Exists, OuterRef
 from django.db.models.functions import Concat
 from accounts.models import User
 from . import models
@@ -65,4 +65,36 @@ def list_members(*, project_id: str, search: str = "", sort: str = "joined", pag
     paginator = Paginator(members, 5)
     page_obj = paginator.get_page(page_number)
     
+    return page_obj
+
+def get_projects_for_user(*, user: User, search: str = "", sort: str|None = None, page_number: int = 1):
+    projects = models.Project.objects.annotate(
+        is_member=Exists(
+            models.Member.objects.filter(
+                project=OuterRef('pk'),
+                user=user
+            )
+        ),
+        is_owner=Exists(
+            models.Member.objects.filter(
+                project=OuterRef('pk'),
+                user=user,
+                member_type=models.MemberType.OWNER,
+            )
+        )
+    )
+    
+    if search:
+        projects = projects.filter(title__icontains = search.lower())
+
+    if not sort:
+        sort = 'created'
+    if sort == 'title':
+        projects = projects.order_by('title')
+    elif sort == 'created':
+        projects = projects.order_by('-created_at')
+    
+    paginator = Paginator(projects, 10)
+    page_obj = paginator.get_page(page_number)
+
     return page_obj

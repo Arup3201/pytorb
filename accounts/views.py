@@ -10,7 +10,7 @@ def register(request):
     if request.method == "POST":
         form = forms.RegisterForm(request.POST)
         if not form.is_valid() and form.errors.get("password2"):
-            messages.add_message(request, messages.ERROR, "Passwords do not match.")
+            messages.add_message(request, messages.ERROR, str(form["password2"].errors))
         else:
             try:
                 services.create_user(email=form.data["email"], 

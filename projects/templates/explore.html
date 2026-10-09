@@ -1,0 +1,175 @@
+{% extends 'auth_base.html' %}
+{% load ui_tags %}
+
+{% block title %} Explore - Task Orbit {% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Top Bar -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item active" aria-current="page">
+                    Explore Projects
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="d-flex flex-column flex-sm-row gap-2 mb-3">
+        <form method="GET" class="input-group flex-grow-1">
+            <span class="input-group-text">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="search" value="{{ search }}" class="form-control" placeholder="Search projects..." aria-label="Search projects"
+                name="search">
+            <input type="hidden" value="{{ sort }}" name="sort">
+        </form>
+
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                <i class="bi bi-sort-down me-1"></i>
+                Sort
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a href="?search={{ search|urlencode }}&sort=title" class="dropdown-item {% if sort == 'title'%}active{% endif %}">
+                        Title
+                    </a>
+                </li>
+                <li>
+                    <a href="?search={{ search|urlencode }}&sort=created" class="dropdown-item {% if sort == 'created'%}active{% endif %}">
+                        Recently Created
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Project Cards -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        {% for project in page_obj %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <!-- Project Title -->
+                    <h5 class="card-title mb-2">
+                        {{ project.title }}
+                    </h5>
+                    <!-- Owner -->
+                    <p class="text-body-secondary small mb-3">
+                        <i class="bi bi-person me-1"></i>
+                        {{ project.owner.first_name|add:" "|add:project.owner.last_name }}
+                    </p>
+                    <!-- Skills -->
+                    <div class="mb-3">
+                        <div class="d-flex flex-wrap gap-2">
+                            {% with project.topics|split:"," as items %}
+                            {% for skill in items|slice:":3" %}
+                            <span class="badge text-bg-primary">{{ skill }}</span>
+                            {% endfor %}
+                            {% if items|length|add:"-3" > 0 %}
+                            <span class="badge text-bg-secondary">{{ items|length|add:"-3" }}</span>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+
+                    <!-- Membership Status -->
+                    <div class="mb-3">
+                        {% if project.is_owner %}
+                        <span class="badge text-bg-info">
+                            <i class="bi bi-star me-1"></i>
+                            Owner
+                        </span>
+                        {% elif project.is_member %}
+                        <span class="badge text-bg-success">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Member
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Actions -->
+                    {% if not project.is_member %}
+                    <div class="mt-auto d-flex gap-2">
+                        <form method="post" action="#">
+                            {% csrf_token %}
+                            <input type="hidden" name="project_id" value="2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-person-plus me-1"></i>
+                                Join
+                            </button>
+                        </form>
+                        <a href="#" class="btn btn-outline-secondary flex-grow-1">
+                            <i class="bi bi-eye me-1"></i>
+                            View Project
+                        </a>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'projects:index' project.id %}" class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>
+                        View Project
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <nav class="mt-4" aria-label="Explore projects pagination">
+        <ul class="pagination justify-content-center mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" aria-label="Previous" href="?page=1&search={{ search|urlencode }}&sort={{ sort }}">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% if page_obj.has_previous %}
+            <li class="page-item" aria-current="page">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search|urlencode }}&sort={{ sort }}">
+                    {{ page_obj.previous_page_number }}
+                </a>
+            </li>
+            {% endif %}
+            <li class="page-item active" aria-current="page">
+                <a class="page-link">
+                    {{ page_obj.number }}
+                </a>
+            </li>
+            {% if page_obj.has_next %}
+            <li class="page-item" aria-current="page">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search|urlencode }}&sort={{ sort }}">
+                    {{ page_obj.next_page_number }}
+                </a>
+            </li>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search|urlencode }}&sort={{ sort }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+{% endblock %}
