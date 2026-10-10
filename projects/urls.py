@@ -11,6 +11,9 @@ urlpatterns = [
         path("edit/", view=views.edit, name='edit'),
         path("tasks/", include([
             path("", view=task_views.create_task, name='create_task')
+        ])),
+        path("join-requests/", include([
+            path("", view=views.join_requests, name='join_requests')
         ]))
     ])),
 ]

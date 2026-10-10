@@ -1,9 +1,9 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from . import services, forms, models
+from . import services, forms
 from tasks.forms import TaskForm
 from tasks import services as task_services
 
@@ -13,7 +13,7 @@ def list(request):
         search = request.GET.get('search', "")
         sort = request.GET.get('sort', 'updated')
         page_number = request.GET.get('page', 1)
-        page_obj = services.get_projects_list(search=search, sort=sort, page_number=page_number)
+        page_obj = services.get_projects_list(user=request.user, search=search, sort=sort, page_number=page_number)
         form = forms.ProjectForm()
         return render(request, 'list.html', {'active_page': 'projects', 'page_obj': page_obj, 'search': search, 'sort': sort, 'form': form})
     
@@ -37,7 +37,10 @@ def list(request):
 @login_required
 def index(request, pk):
     if request.method == 'GET':
-        project = get_object_or_404(models.Project, pk=pk)
+        project = services.get_project(user=request.user, project_id=pk)
+        if not project:
+            raise Http404("Project does not exist")
+        
         form = forms.ProjectForm(instance=project)
         task_form = TaskForm()
 
@@ -82,3 +85,10 @@ def get_projects_for_user(request):
     page_obj = services.get_projects_for_user(user=request.user, search=search, sort=sort, page_number=page_number)
 
     return render(request, 'explore.html', {'active_page': 'explore', 'page_obj': page_obj, 'search': search, 'sort': sort, 'page': page_number})
+
+@login_required
+def join_requests(request, pk):
+    if request.method == 'POST':
+        pass
+
+    return redirect('projects:index', pk=pk)

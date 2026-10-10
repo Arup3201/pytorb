@@ -5,8 +5,44 @@ from django.db.models.functions import Concat
 from accounts.models import User
 from . import models
 
-def get_projects_list(*, search: str = "", sort: str = "updated", page_number: int = 1):
-    projects = models.Project.objects.all()
+def get_project(*, user: User, project_id: str):
+    try:
+        project = models.Project.objects.annotate(
+            is_member=Exists(
+                models.Member.objects.filter(
+                    project=OuterRef('pk'),
+                    user=user
+                )
+            ),
+            is_owner=Exists(
+                models.Member.objects.filter(
+                    project=OuterRef('pk'),
+                    user=user,
+                    member_type=models.MemberType.OWNER,
+                )
+            )
+        ).get(id=project_id)
+    except models.Project.DoesNotExist:
+        return None
+    else:
+        return project
+
+def get_projects_list(*, user: User, search: str = "", sort: str = "updated", page_number: int = 1):
+    projects = models.Project.objects.annotate(
+        is_member=Exists(
+            models.Member.objects.filter(
+                project=OuterRef('pk'),
+                user=user
+            )
+        ),
+        is_owner=Exists(
+            models.Member.objects.filter(
+                project=OuterRef('pk'),
+                user=user,
+                member_type=models.MemberType.OWNER,
+            )
+        )
+    ).filter(is_member=True)
     if search:
         projects = projects.filter(title__contains = search)
 
@@ -98,3 +134,6 @@ def get_projects_for_user(*, user: User, search: str = "", sort: str|None = None
     page_obj = paginator.get_page(page_number)
 
     return page_obj
+
+def list_join_requests(*, project_id: str, user: User, search: str = "", sort: str|None = None, page_number: int = 1):
+    return []
