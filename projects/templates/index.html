@@ -331,7 +331,7 @@
                                 </td>
                                 <td class="text-end px-4">
                                     {% if project.is_member %}
-                                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                                    <a href="{% url 'projects:task_index' project.id task.id %}" class="btn btn-sm btn-outline-secondary">
                                         View
                                     </a>
                                     {% endif %}

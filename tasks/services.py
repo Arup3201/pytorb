@@ -24,3 +24,11 @@ def list_tasks(*, project_id: str, search: str = "", sort: str = 'updated', page
     page_obj = paginator.get_page(page_number)
 
     return page_obj
+
+def get_task(*, task_id: str):
+    try:
+        task = models.Task.objects.get(id=task_id)
+    except models.Task.DoesNotExist:
+        return None
+    else:
+        return task

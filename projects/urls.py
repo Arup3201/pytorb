@@ -10,7 +10,8 @@ urlpatterns = [
         path("", view=views.index, name='index'),
         path("edit/", view=views.edit, name='edit'),
         path("tasks/", include([
-            path("", view=task_views.create_task, name='create_task')
+            path("", view=task_views.create_task, name='create_task'),
+            path("<int:task_id>", view=task_views.index, name='task_index')
         ])),
         path("join-requests/", include([
             path("", view=views.join_requests, name='join_requests'),
