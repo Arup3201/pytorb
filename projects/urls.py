@@ -13,7 +13,8 @@ urlpatterns = [
             path("", view=task_views.create_task, name='create_task')
         ])),
         path("join-requests/", include([
-            path("", view=views.join_requests, name='join_requests')
+            path("", view=views.join_requests, name='join_requests'),
+            path("respond/", view=views.respond_to_join_request, name='respond_to_join_request'),
         ]))
     ])),
 ]

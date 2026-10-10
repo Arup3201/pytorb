@@ -135,5 +135,59 @@ def get_projects_for_user(*, user: User, search: str = "", sort: str|None = None
 
     return page_obj
 
-def list_join_requests(*, project_id: str, user: User, search: str = "", sort: str|None = None, page_number: int = 1):
-    return []
+def create_join_request(*, project_id: str, user: User):
+    join_request = models.JoinRequest(project_id=project_id, user_id=user.pk)
+    join_request.join_status = models.JoinRequestStatus.PENDING
+    join_request.save()
+
+def get_join_status(*, project_id: str, user: User):
+    try:
+        join_request = models.JoinRequest.objects.get(project_id=project_id, user=user)
+    except models.JoinRequest.DoesNotExist:
+        return ""
+    else:
+        return join_request.join_status
+
+def list_join_requests(*, project_id: str, search: str = "", sort: str|None = None, page_number: int = 1):
+    join_requests = models.JoinRequest.objects.filter(project_id=project_id, join_status=models.JoinRequestStatus.PENDING)
+
+    full_name = Concat(
+        "user__first_name", 
+        Value(" "),
+        "user__last_name", 
+        output_field=CharField(),
+    )
+
+    if search:
+        join_requests = join_requests.annotate(
+            full_name=full_name
+            ).filter(
+                full_name__icontains = search.lower()
+                )
+
+    if not sort:
+        sort = "requested"
+    if sort == 'requested':
+        join_requests = join_requests.order_by('-created_at')
+    elif sort == 'name':
+        join_requests = join_requests.annotate(
+            full_name=full_name
+        ).order_by('full_name')
+    elif sort == 'username':
+        join_requests = join_requests.order_by('user__username')
+
+    paginator = Paginator(join_requests, 5)
+    page_obj = paginator.get_page(page_number)
+    
+    return page_obj
+
+def respond_to_join_request(*, project_id: str, requestor_id: str, responder_id: str, response: str):
+    with transaction.atomic():
+        join_request = models.JoinRequest.objects.get(project_id=project_id, user_id=requestor_id)
+        if response=='approve':
+            join_request.join_status = models.JoinRequestStatus.ACCEPTED
+            models.Member.objects.create(project_id=project_id, user_id=requestor_id)
+        elif response=='reject':
+            join_request.join_status = models.JoinRequestStatus.REJECTED
+    
+        join_request.save()

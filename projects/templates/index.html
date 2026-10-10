@@ -23,14 +23,30 @@
                 class="bi bi-pencil-square me-1"></i>
             Edit Project
         </button>
+        {% elif not project.is_member and not join_status or join_status == 'REJ' %}
+        {% if join_status == 'REJ' %}
+        <i
+            class="bi bi-info-circle text-warning"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Your previous join request was rejected."
+            tabindex="0"
+            role="img"
+            aria-label="Your previous join request was rejected."
+        ></i>
         {% endif %}
-        {% if not project.is_member %}
         <form method="post" action="{% url 'projects:join_requests' project.id %}">
+            {% csrf_token %}
             <button type="submit" class="btn btn-primary"> 
                 <i class="bi bi-person-plus me-1"></i>
                 Send Request
             </button>
         </form>
+        {% elif join_status == 'PEN' %}
+        <button type="button" class="btn btn-outline-secondary" disabled>
+            <i class="bi bi-hourglass-split me-1"></i>
+            Request Pending
+        </button>
         {% endif %}
     </div>
 
@@ -155,7 +171,7 @@
                         Members
                     </a>
                 </li>
-                {% if project.is_member %}
+                {% if project.is_owner %}
                 <li class="nav-item">
                     <a
                         href="?section=join-requests"
@@ -413,15 +429,24 @@
                                 </td>
 
                                 <td class="text-end px-4">
-
-                                    <button class="btn btn-sm btn-success me-1">
-                                        Approve
-                                    </button>
-
-                                    <button class="btn btn-sm btn-outline-danger">
-                                        Reject
-                                    </button>
-
+                                    <div class="d-flex justify-content-end align-items-center gap-2">
+                                        <form method="post" action="{% url 'projects:respond_to_join_request' project.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" value="approve" name="response" >
+                                            <input type="hidden" value="{{ request.user.id }}" name="user_id" >
+                                            <button type="submit" class="btn btn-sm btn-success me-1">
+                                                Approve
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url 'projects:respond_to_join_request' project.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" value="reject" name="response" >
+                                            <input type="hidden" value="{{ request.user.id }}" name="user_id" >
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
 

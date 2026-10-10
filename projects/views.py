@@ -53,11 +53,16 @@ def index(request, pk):
         elif section == 'members':
             sort = request.GET.get('sort', 'joined')
             page_obj = services.list_members(project_id=pk, search=search, sort=sort, page_number=page_number)
+        elif section == 'join-requests':
+            sort = request.GET.get('sort', 'joined')
+            page_obj = services.list_join_requests(project_id=pk, search=search, sort=sort, page_number=page_number)
         else:
             sort = ''
             page_obj = []
 
-        return render(request, 'index.html', {'active_page': 'projects', 'project_section': section, 'project': project, 'form': form, 'task_form': task_form, 'page_obj': page_obj, 'search': search, 'sort': sort, 'page': page_number})
+        join_status = services.get_join_status(project_id=pk, user=request.user)
+
+        return render(request, 'index.html', {'active_page': 'projects', 'project_section': section, 'project': project, 'join_status': join_status, 'form': form, 'task_form': task_form, 'page_obj': page_obj, 'search': search, 'sort': sort, 'page': page_number})
     else:
         messages.add_message(request, messages.SUCCESS, "URL method is not allowed!")
     
@@ -89,6 +94,16 @@ def get_projects_for_user(request):
 @login_required
 def join_requests(request, pk):
     if request.method == 'POST':
-        pass
+        services.create_join_request(project_id=pk, user=request.user)
+        messages.add_message(request, messages.SUCCESS, "Join request has been sent to the owner.")
+
+    return redirect('projects:index', pk=pk)
+
+@login_required
+def respond_to_join_request(request, pk):
+    if request.method == 'POST':
+        response = request.POST.get('response', '')
+        user_id = request.POST.get('user_id', '')
+        services.respond_to_join_request(project_id=pk, requestor_id=user_id, responder_id=request.user.id, response=response)
 
     return redirect('projects:index', pk=pk)

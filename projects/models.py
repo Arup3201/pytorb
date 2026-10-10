@@ -16,4 +16,18 @@ class MemberType(models.TextChoices):
 class Member(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    member_type = models.CharField(max_length=6, choices=MemberType, default=MemberType.MEMBER)
+    member_type = models.CharField(max_length=3, 
+                                   choices=MemberType, 
+                                   default=MemberType.MEMBER)
+
+class JoinRequestStatus(models.TextChoices):
+    PENDING = "PEN", _("Pending")
+    ACCEPTED = "ACC", _("Accepted")
+    REJECTED = "REJ", _("Rejected")
+
+class JoinRequest(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    join_status = models.CharField(max_length=3, 
+                                   choices=JoinRequestStatus, 
+                                   default=JoinRequestStatus.PENDING)
