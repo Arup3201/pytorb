@@ -331,9 +331,11 @@
                                     {{ task.updated_at }}
                                 </td>
                                 <td class="text-end px-4">
+                                    {% if project.is_member %}
                                     <a href="#" class="btn btn-sm btn-outline-secondary">
                                         View
                                     </a>
+                                    {% endif %}
                                 </td>
                             </tr>
 
