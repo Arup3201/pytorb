@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from core.models import BaseModel
+from core.models import BaseModel, SoftDeleteModel
 from projects.models import Project
+from accounts.models import User
 
 class Task(BaseModel):
     class TaskStatus(models.TextChoices):
@@ -13,3 +14,10 @@ class Task(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField()
     status = models.CharField(max_length=2, choices=TaskStatus, default=TaskStatus.TODO)
+
+class Assignee(BaseModel, SoftDeleteModel):
+    class Meta(BaseModel.Meta, SoftDeleteModel.Meta):
+        pass
+
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

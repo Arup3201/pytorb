@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator
 from . import models
-from projects.models import Project
+from projects.models import Project, Member
 
 def create_task(*, project_id: str, title: str, description: str, status: str):
     project = Project.objects.get(id=project_id)
@@ -32,3 +32,30 @@ def get_task(*, task_id: str):
         return None
     else:
         return task
+
+def get_assignees(*, task: models.Task):
+    return task.assignee_set.values_list('user_id', flat=True)
+
+def get_project_members(*, project_id: str):
+    return Member.objects.filter(project_id=project_id)
+
+def update_task(*, task_id: str, title: str|None = None, description: str|None = None, status: str|None = None):
+    task = models.Task.objects.get(id=task_id)
+    if title is not None:
+        task.title = title
+    if description is not None:
+        task.description = description
+    if status is not None:
+        task.status = status
+    task.save()
+
+def update_assignees(*, task_id: str, assignees: list[str]):
+    task = models.Task.objects.get(id=task_id)
+
+    existing_task_assignees = task.assignee_set.values_list('user_id', flat=True)
+    for assignee in existing_task_assignees:
+        if assignee not in assignees:
+            models.Assignee.objects.filter(task_id=task_id, user_id=assignee).delete()
+    for assignee in assignees:
+        if assignee not in existing_task_assignees:
+            models.Assignee.objects.create(task_id=task_id, user_id=assignee)
