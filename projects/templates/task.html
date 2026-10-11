@@ -271,7 +271,7 @@
         <div class="card-body p-4 pt-0">
 
             <!-- Add Comment -->
-            <form method="post" action="#">
+            <form method="post" action="{% url 'projects:create_task_comment' task.project.id task.id %}">
                 {% csrf_token %}
 
                 <div class="d-flex gap-3">
@@ -327,7 +327,7 @@
             <!-- Existing Comments -->
             <div class="d-flex flex-column gap-4">
 
-                {% for comment in comments %}
+                {% for comment in task.comment_set.all %}
                     <div class="d-flex gap-3">
 
                         <!-- Comment Author Avatar -->

@@ -14,6 +14,7 @@ urlpatterns = [
             path("<int:task_id>", view=task_views.index, name='task_index'),
             path("<int:task_id>/update", view=task_views.update, name='task_update'),
             path("<int:task_id>/update_assignees", view=task_views.update_assignees, name='task_update_assignees'),
+            path("<int:task_id>/comments", view=task_views.create_comment, name='create_task_comment')
         ])),
         path("join-requests/", include([
             path("", view=views.join_requests, name='join_requests'),

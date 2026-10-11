@@ -46,3 +46,12 @@ def update_assignees(request, pk, task_id):
         services.update_assignees(task_id=task_id, assignees=assignees)
         messages.add_message(request, messages.SUCCESS, "Task assignees updated.")
     return redirect('projects:task_index', pk=pk, task_id=task_id)
+
+@login_required
+def create_comment(request, pk, task_id):
+    if request.method == 'POST':
+        comment = request.POST.get('content')
+        messages.add_message(request, messages.SUCCESS, "Comment has been added.")
+        services.create_comment(task_id=task_id, author=request.user.id, comment=comment)
+
+    return redirect('projects:task_index', pk=pk, task_id=task_id)

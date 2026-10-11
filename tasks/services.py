@@ -1,4 +1,5 @@
 from django.core.paginator import Paginator
+from django.db import transaction
 from . import models
 from projects.models import Project, Member
 
@@ -52,10 +53,14 @@ def update_task(*, task_id: str, title: str|None = None, description: str|None =
 def update_assignees(*, task_id: str, assignees: list[str]):
     task = models.Task.objects.get(id=task_id)
 
-    existing_task_assignees = task.assignee_set.values_list('user_id', flat=True)
-    for assignee in existing_task_assignees:
-        if assignee not in assignees:
-            models.Assignee.objects.filter(task_id=task_id, user_id=assignee).delete()
-    for assignee in assignees:
-        if assignee not in existing_task_assignees:
-            models.Assignee.objects.create(task_id=task_id, user_id=assignee)
+    with transaction.atomic():
+        existing_task_assignees = task.assignee_set.values_list('user_id', flat=True)
+        for assignee in existing_task_assignees:
+            if assignee not in assignees:
+                models.Assignee.objects.filter(task_id=task_id, user_id=assignee).delete()
+        for assignee in assignees:
+            if assignee not in existing_task_assignees:
+                models.Assignee.objects.create(task_id=task_id, user_id=assignee)
+    
+def create_comment(*, task_id: str, author: str, comment: str):
+    models.Comment.objects.create(task_id=task_id, user_id=author, content=comment)

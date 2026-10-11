@@ -21,3 +21,9 @@ class Assignee(BaseModel, SoftDeleteModel):
 
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+class Comment(BaseModel):
+
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField(verbose_name='comment text')
