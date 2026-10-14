@@ -64,3 +64,14 @@ def update_assignees(*, task_id: str, assignees: list[str]):
     
 def create_comment(*, task_id: str, author: str, comment: str):
     models.Comment.objects.create(task_id=task_id, user_id=author, content=comment)
+
+def get_permissions_on_task(*, project_id: str, task_id: str, user: models.User):
+    project = Project.objects.get(id=project_id)
+    if project.owner.pk == user.pk:
+        return ["task:edit", "task:assign"]
+
+    assignee = models.Assignee.objects.filter(task_id=task_id, user_id=user.pk)
+    if assignee:
+        return ["task:edit"]
+
+    return []

@@ -26,7 +26,16 @@ def index(request, pk, task_id):
 
     assignees = services.get_assignees(task=task)
     members = services.get_project_members(project_id=pk)
-    return render(request, 'task.html', {'active_page': 'projects', 'task': task, 'project_members': members, 'assignees': assignees})
+    permissions = services.get_permissions_on_task(project_id=pk, 
+                                                   task_id=task_id, 
+                                                   user=request.user)
+    can_assign = False
+    if "task:assign" in permissions:
+        can_assign = True
+    can_edit = False
+    if "task:edit" in permissions:
+        can_edit = True
+    return render(request, 'task.html', {'active_page': 'projects', 'task': task, 'project_members': members, 'assignees': assignees, 'can_edit': can_edit, 'can_assign': can_assign})
 
 @login_required
 def update(request, pk, task_id):
