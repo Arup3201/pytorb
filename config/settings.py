@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'accounts.apps.AccountsConfig',
     'projects.apps.ProjectsConfig',
-    'tasks.apps.TasksConfig'
+    'tasks.apps.TasksConfig',
+    'notifications.apps.NotificationsConfig'
 ]
 
 MIDDLEWARE = [

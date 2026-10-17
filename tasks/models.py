@@ -20,7 +20,7 @@ class Assignee(BaseModel, SoftDeleteModel):
         pass
 
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="assignees")
 
 class Comment(BaseModel):
 

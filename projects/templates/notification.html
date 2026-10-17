@@ -1,0 +1,335 @@
+{% extends 'auth_base.html' %}
+
+{% block title %} Notifications - Task Orbit {% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Top Bar -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item active" aria-current="page">
+                    Notifications
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="mb-3">
+                <h2 class="fw-bold mb-1">Notifications</h2>
+                <p class="text-body-secondary mb-0">
+                    Stay updated on your projects, tasks, and team activity.
+                </p>
+            </div>
+
+            <hr class="my-4">
+
+            {% for notification in page_obj %}
+                <div class="d-flex gap-3 py-3 {% if not forloop.last %}border-bottom{% endif %}">
+
+                    <!-- Notification Icon -->
+                    <div class="flex-shrink-0">
+                        <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center"
+                            style="width: 44px; height: 44px;">
+
+                            {% if notification.event_type == 'project.update' %}
+                                <i class="bi bi-folder2-open fs-5"></i>
+
+                            {% elif notification.event_type == 'project.join_request' %}
+                                <i class="bi bi-person-plus fs-5"></i>
+
+                            {% elif notification.event_type == 'project.join_response' %}
+                                <i class="bi bi-person-check fs-5"></i>
+
+                            {% elif notification.event_type == 'task.add' %}
+                                <i class="bi bi-plus-square fs-5"></i>
+
+                            {% elif notification.event_type == 'task.update' %}
+                                <i class="bi bi-pencil-square fs-5"></i>
+
+                            {% elif notification.event_type == 'task.assignee.add' or notification.event_type == 'task.assignee.remove' %}
+                                <i class="bi bi-people fs-5"></i>
+
+                            {% elif notification.event_type == 'task.comment.add' %}
+                                <i class="bi bi-chat-left-text fs-5"></i>
+
+                            {% else %}
+                                <i class="bi bi-bell fs-5"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Notification Content -->
+                    <div class="flex-grow-1 min-width-0">
+
+                        <div class="d-flex flex-column flex-sm-row justify-content-between gap-1 mb-2">
+                            <div class="fw-semibold">
+                                {% if notification.event_type == 'project.update' %}
+                                    Project Updated
+
+                                {% elif notification.event_type == 'project.join_request' %}
+                                    New Join Request
+
+                                {% elif notification.event_type == 'project.join_response' %}
+                                    Join Request Responded
+
+                                {% elif notification.event_type == 'task.add' %}
+                                    New Task
+
+                                {% elif notification.event_type == 'task.update' %}
+                                    Task Updated
+
+                                {% elif notification.event_type == 'task.assignee.add' or notification.event_type == 'task.assignee.remove' %}
+                                    Task Assignees Updated
+
+                                {% elif notification.event_type == 'task.comment.add' %}
+                                    New Task Comment
+
+                                {% else %}
+                                    Notification
+                                {% endif %}
+                            </div>
+
+                            <small class="text-body-secondary text-nowrap">
+                                {{ notification.created_at|timesince }} ago
+                            </small>
+                        </div>
+
+                        <div class="text-body-secondary mb-3">
+
+                            <!-- 1. Project Updated -->
+                            {% if notification.event_type == 'project.update' %}
+                                <p class="mb-2">
+                                    The project
+                                    <span class="fw-semibold text-body">
+                                        {{ notification.payload.title.new|default:notification.payload.title.old }}
+                                    </span>
+                                    has been updated.
+                                </p>
+
+                                <ul class="mb-0 ps-3">
+                                    {% if notification.payload.title %}
+                                        {% if notification.payload.title.old != notification.payload.title.new %}
+                                            <li>
+                                                Title changed from
+                                                <span class="fw-medium text-body">
+                                                    "{{ notification.payload.title.old }}"
+                                                </span>
+                                                to
+                                                <span class="fw-medium text-body">
+                                                    "{{ notification.payload.title.new }}"
+                                                </span>.
+                                            </li>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    {% if notification.payload.description %}
+                                        {% if notification.payload.description.old != notification.payload.description.new %}
+                                            <li>Project description was updated.</li>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    {% if notification.payload.topics %}
+                                        {% if notification.payload.topics.old != notification.payload.topics.new %}
+                                            <li>Project topics were updated.</li>
+                                        {% endif %}
+                                    {% endif %}
+                                </ul>
+
+                            <!-- 2. Join Request Added -->
+                            {% elif notification.event_type == 'project.join_request' %}
+                                A new join request has been submitted for the project
+                                <span class="fw-semibold text-body">
+                                    {{ notification.payload.project_title }}
+                                </span>.
+
+                            <!-- 3. Join Request Responded -->
+                            {% elif notification.event_type == 'project.join_response' %}
+                                Your join request for the project
+                                <span class="fw-semibold text-body">
+                                    {{ notification.payload.project_title }}
+                                </span>
+                                {% if notification.payload.join_status == 'AC' %}
+                                    has been
+                                    <span class="fw-semibold text-success">approved</span>.
+                                {% elif notification.payload.join_status == 'RJ' %}
+                                    has been
+                                    <span class="fw-semibold text-danger">rejected</span>.
+                                {% else %}
+                                    has been updated.
+                                {% endif %}
+
+                            <!-- 4. Task Added -->
+                            {% elif notification.event_type == 'task.add' %}
+                                A new task,
+                                <span class="fw-semibold text-body">
+                                    {{ notification.payload.task_title }}
+                                </span>,
+                                has been added to your project.
+
+                            <!-- 5. Task Updated -->
+                            {% elif notification.event_type == 'task.update' %}
+                                <p class="mb-2">
+                                    The task
+                                    <span class="fw-semibold text-body">
+                                        {{ notification.payload.title.new|default:notification.payload.task_title|default:"Task" }}
+                                    </span>
+                                    has been updated.
+                                </p>
+
+                                <ul class="mb-0 ps-3">
+                                    {% if notification.payload.title %}
+                                        {% if notification.payload.title.old != notification.payload.title.new %}
+                                            <li>
+                                                Title changed from
+                                                <span class="fw-medium text-body">
+                                                    "{{ notification.payload.title.old }}"
+                                                </span>
+                                                to
+                                                <span class="fw-medium text-body">
+                                                    "{{ notification.payload.title.new }}"
+                                                </span>.
+                                            </li>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    {% if notification.payload.description %}
+                                        {% if notification.payload.description.old != notification.payload.description.new %}
+                                            <li>Task description was updated.</li>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    {% if notification.payload.status %}
+                                        {% if notification.payload.status.old != notification.payload.status.new %}
+                                            <li>
+                                                Status changed from
+                                                <span class="fw-medium text-body">
+                                                    {{ notification.payload.status.old }}
+                                                </span>
+                                                to
+                                                <span class="fw-medium text-body">
+                                                    {{ notification.payload.status.new }}
+                                                </span>.
+                                            </li>
+                                        {% endif %}
+                                    {% endif %}
+                                </ul>
+
+                            <!-- 6. Task Assignee Added/Removed -->
+                            {% elif notification.event_type == 'task.assignee.add' or notification.event_type == 'task.assignee.remove' %}
+                                The assignees for the task
+                                <span class="fw-semibold text-body">
+                                    {{ notification.payload.task_title }}
+                                </span>
+                                have been updated.
+
+                            <!-- 7. Task Comment Added -->
+                            {% elif notification.event_type == 'task.comment.add' %}
+                                A new comment has been added to the task
+                                <span class="fw-semibold text-body">
+                                    {{ notification.payload.task_title }}
+                                </span>.
+
+                            {% else %}
+                                You have a new notification.
+                            {% endif %}
+                        </div>
+
+                        <!-- Related Resource Link -->
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            {% if notification.payload.project_id %}
+                                <a href="{% url 'projects:index' notification.payload.project_id %}"
+                                class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-folder2-open me-1"></i>
+                                    View Project
+                                </a>
+                            {% endif %}
+
+                            {% if notification.payload.task_id %}
+                                <a href="{% url 'projects:task_index' notification.payload.project_id notification.payload.task_id %}"
+                                class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-arrow-up-right-square me-1"></i>
+                                    View Task
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Unread Indicator -->
+                    {% if not notification.read_at %}
+                        <div class="flex-shrink-0 pt-1">
+                            <span class="d-inline-block rounded-circle bg-primary"
+                                style="width: 9px; height: 9px;"
+                                title="Unread notification"></span>
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% empty %}
+                <div class="text-center py-5">
+                    <i class="bi bi-bell-slash fs-1 text-body-secondary"></i>
+                    <h5 class="fw-bold mt-3 mb-2">You're all caught up!</h5>
+                    <p class="text-body-secondary mb-0">
+                        You don't have any notifications yet.
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <nav class="mt-4" aria-label="Notifications pagination">
+        <ul class="pagination justify-content-center mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" aria-label="Previous" href="?page=1">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                    {{ page_obj.previous_page_number }}
+                </a>
+            </li>
+            {% endif %}
+            <li class="page-item active" aria-current="page">
+                <a class="page-link">
+                    {{ page_obj.number }}
+                </a>
+            </li>
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                    {{ page_obj.next_page_number }}
+                </a>
+            </li>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+{% endblock %}

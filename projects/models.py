@@ -14,7 +14,7 @@ class MemberType(models.TextChoices):
     MEMBER = "MEM", _("Member")
 
 class Member(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="members")
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     member_type = models.CharField(max_length=3, 
                                    choices=MemberType, 

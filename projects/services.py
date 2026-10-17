@@ -4,6 +4,8 @@ from django.db.models import Value, CharField, Exists, OuterRef
 from django.db.models.functions import Concat
 from accounts.models import User
 from . import models
+from notifications.services import create_notification, bulk_create_notification
+from notifications.models import Notification
 
 def get_project(*, user: User, project_id: str):
     try:
@@ -60,13 +62,38 @@ def get_projects_list(*, user: User, search: str = "", sort: str = "updated", pa
 
     return page_obj
 
+@transaction.atomic
 def create_project(*, title: str, description: str, topics: str, user: User):
-    with transaction.atomic():
-        project = models.Project.objects.create(title=title, description=description, topics=topics, owner=user)
-        models.Member.objects.create(user=user, project=project, member_type=models.MemberType.OWNER)
+    project = models.Project.objects.create(title=title, description=description, topics=topics, owner=user)
+    models.Member.objects.create(user=user, project=project, member_type=models.MemberType.OWNER)
 
+@transaction.atomic
 def edit_project(*, pk: str, title: str, description: str, topics: str):
     project = models.Project.objects.get(pk=pk)
+    
+    bulk_create_notification(
+        recipients=models.User.objects.filter(
+            members__project_id=pk
+        ).distinct(), 
+        event_type=Notification.EventType.PROJECT_UPDATED,
+        payload={
+            "project_id": project.pk,
+            "title": {
+                "old": project.title,
+                "new": title,
+            },
+            "description": {
+                "old": project.description,
+                "new": description,
+            }, 
+            "topics": {
+                "old": project.topics,
+                "new": topics,
+            }
+        }, 
+        actor=project.owner
+    )
+    
     project.title = title
     project.description = description
     project.topics = topics
@@ -135,8 +162,21 @@ def get_projects_for_user(*, user: User, search: str = "", sort: str|None = None
 
     return page_obj
 
+@transaction.atomic
 def create_join_request(*, project_id: str, user: User):
     join_request = models.JoinRequest(project_id=project_id, user_id=user.pk)
+
+    project = models.Project.objects.get(id=project_id)
+    create_notification(
+        recipient=project.owner,
+        event_type=Notification.EventType.JOIN_REQUEST_ADDED,
+        payload={
+            "project_id": project.pk,
+            "project_title": project.title,
+        }, 
+        actor=user
+    )
+
     join_request.join_status = models.JoinRequestStatus.PENDING
     join_request.save()
 
@@ -181,13 +221,26 @@ def list_join_requests(*, project_id: str, search: str = "", sort: str|None = No
     
     return page_obj
 
+@transaction.atomic
 def respond_to_join_request(*, project_id: str, requestor_id: str, responder_id: str, response: str):
-    with transaction.atomic():
-        join_request = models.JoinRequest.objects.get(project_id=project_id, user_id=requestor_id)
-        if response=='approve':
-            join_request.join_status = models.JoinRequestStatus.ACCEPTED
-            models.Member.objects.create(project_id=project_id, user_id=requestor_id)
-        elif response=='reject':
-            join_request.join_status = models.JoinRequestStatus.REJECTED
-    
-        join_request.save()
+    join_request = models.JoinRequest.objects.get(project_id=project_id, user_id=requestor_id)
+    if response=='approve':
+        join_request.join_status = models.JoinRequestStatus.ACCEPTED
+        models.Member.objects.create(project_id=project_id, user_id=requestor_id)
+    elif response=='reject':
+        join_request.join_status = models.JoinRequestStatus.REJECTED
+
+    project = models.Project.objects.get(id=project_id)
+    create_notification(
+        recipient=models.User.objects.get(id=requestor_id),
+        event_type=Notification.EventType.JOIN_REQUEST_ADDED,
+        payload={
+            "project_id": project.pk,
+            "project_title": project.title,
+            "join_status": join_request.join_status
+        }, 
+        actor=models.User.objects.get(id=responder_id)
+    )
+
+
+    join_request.save()
