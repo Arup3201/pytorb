@@ -44,7 +44,7 @@ def login(request):
                 services.login_user(request=request, 
                                     username=form.data["username"], 
                                     password=form.data["password"])
-                return HttpResponseRedirect(reverse("accounts:profile"))
+                return HttpResponseRedirect(reverse("dashboard:index"))
             except ValueError as v:
                 messages.add_message(request, messages.ERROR, str(v))
     else:
