@@ -1,6 +1,7 @@
-const socket = new WebSocket(
-    "ws://127.0.0.1:8001/ws/notifications/"
+const websocketUrl = JSON.parse(
+    document.getElementById("websocket-url").textContent
 );
+const socket = new WebSocket(websocketUrl);
 
 socket.onopen = function () {
     console.log("Connected to WebSocket server");
