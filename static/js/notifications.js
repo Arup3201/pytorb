@@ -119,11 +119,11 @@ function getNotificationMessage(notification) {
         case "project.join_response": {
             const status = payload.join_status;
 
-            if (status === "AC") {
+            if (status === "ACC") {
                 return `Your join request for the project "${payload.project_title || "Project"}" has been approved.`;
             }
 
-            if (status === "RJ") {
+            if (status === "REJ") {
                 return `Your join request for the project "${payload.project_title || "Project"}" has been rejected.`;
             }
 
