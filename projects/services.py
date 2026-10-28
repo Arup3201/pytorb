@@ -233,7 +233,7 @@ def respond_to_join_request(*, project_id: str, requestor_id: str, responder_id:
     project = models.Project.objects.get(id=project_id)
     create_notification(
         recipient=models.User.objects.get(id=requestor_id),
-        event_type=Notification.EventType.JOIN_REQUEST_ADDED,
+        event_type=Notification.EventType.JOIN_REQUEST_RESPONDED,
         payload={
             "project_id": project.pk,
             "project_title": project.title,
